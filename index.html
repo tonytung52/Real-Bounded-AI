@@ -1,0 +1,1033 @@
+# Real-Bounded-AI
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI伴侶的崛起 — 真實但有邊界</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;600;900&family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep:   #010710;
+  --bg-card:   #050d1c;
+  --bg-panel:  #071224;
+  --bg-glass:  rgba(5,13,28,0.9);
+  --cyan:      #00f0ff;
+  --gold:      #ffe040;
+  --rose:      #ff4d8d;
+  --lime:      #c6ff4a;
+  --violet:    #dd99ff;
+  --text-a:    #f0f9ff;
+  --text-b:    #90c8e8;
+  --text-c:    #4a7a9b;
+  --border-hi: rgba(0,240,255,0.55);
+  --border-lo: rgba(0,240,255,0.13);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg-deep);
+  color:var(--text-a);
+  font-family:'Noto Sans TC',sans-serif;
+  overflow-x:hidden;
+  cursor:default;
+}
+
+/* ── STARFIELD ── */
+#sf{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at 25% 45%,#0c1a34 0%,var(--bg-deep) 65%);}
+.st{position:absolute;border-radius:50%;background:#fff;}
+
+/* ══════════════════════════════════
+   TICKER  — speed controlled by JS
+══════════════════════════════════ */
+.ticker-wrap{
+  position:sticky;top:0;z-index:200;
+  background:linear-gradient(90deg,#000c18,#011020 40%,#000c18);
+  border-bottom:2px solid rgba(0,240,255,.75);
+  height:40px;overflow:hidden;
+  box-shadow:0 3px 36px rgba(0,240,255,.4),0 1px 0 rgba(0,240,255,.6);
+  display:flex;align-items:center;
+}
+.ticker-badge{
+  flex-shrink:0;
+  padding:3px 14px;
+  background:var(--cyan);color:#000;
+  font-family:'Orbitron',monospace;
+  font-size:10px;font-weight:900;letter-spacing:2.5px;
+  white-space:nowrap;margin:0 0 0 14px;border-radius:2px;z-index:2;
+}
+.ticker-mask{overflow:hidden;flex:1;position:relative;}
+.ticker-mask::before,.ticker-mask::after{
+  content:'';position:absolute;top:0;width:40px;height:100%;z-index:1;
+}
+.ticker-mask::before{left:0;background:linear-gradient(90deg,#000c18,transparent);}
+.ticker-mask::after{right:0;background:linear-gradient(270deg,#000c18,transparent);}
+#tickerInner{display:flex;white-space:nowrap;will-change:transform;}
+.ti{
+  font-size:13.5px;color:#00f0ff;letter-spacing:.9px;font-weight:500;
+  padding-right:72px;font-family:'Noto Sans TC',sans-serif;flex-shrink:0;
+}
+.ti .sep{color:var(--gold);margin-right:72px;}
+
+/* ── PAGE WRAP ── */
+.page{position:relative;z-index:1;}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  text-align:center;padding:70px 24px 50px;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 42%,rgba(0,100,180,.16) 0%,transparent 68%),
+    radial-gradient(ellipse 38% 36% at 82% 18%,rgba(0,229,255,.07) 0%,transparent 60%);
+  position:relative;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(0deg,transparent,transparent 59px,rgba(0,240,255,.038) 59px,rgba(0,240,255,.038) 60px),
+    repeating-linear-gradient(90deg,transparent,transparent 59px,rgba(0,240,255,.038) 59px,rgba(0,240,255,.038) 60px);
+  pointer-events:none;
+}
+
+.eyebrow{
+  font-family:'Orbitron',monospace;font-size:10px;font-weight:400;
+  letter-spacing:5px;color:var(--cyan);text-transform:uppercase;
+  margin-bottom:30px;
+  opacity:0;animation:fadeUp .9s ease .3s forwards;
+}
+.hero-title{
+  font-family:'Noto Serif TC',serif;
+  font-size:clamp(3rem,9vw,7rem);font-weight:900;line-height:1.04;
+  letter-spacing:-.02em;margin-bottom:18px;
+  opacity:0;animation:fadeUp .9s ease .55s forwards;
+}
+.hero-title .l1{
+  display:block;
+  background:linear-gradient(130deg,#ffffff 0%,var(--cyan) 48%,#a0d8f0 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-title .l2{display:block;color:var(--gold);text-shadow:0 0 60px rgba(255,224,64,.65),0 0 20px rgba(255,224,64,.4);}
+.hero-sub{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(.85rem,1.8vw,1.1rem);font-weight:400;letter-spacing:4px;
+  color:var(--text-b);margin-bottom:54px;
+  opacity:0;animation:fadeUp .9s ease .8s forwards;
+}
+.hero-stats{
+  display:flex;gap:44px;flex-wrap:wrap;justify-content:center;
+  margin-bottom:64px;
+  opacity:0;animation:fadeUp .9s ease 1.05s forwards;
+}
+.stat-item{text-align:center;}
+.stat-num{
+  font-family:'Orbitron',monospace;font-size:2.4rem;font-weight:900;
+  color:var(--cyan);display:block;text-shadow:0 0 28px rgba(0,240,255,.8),0 0 8px rgba(0,240,255,.5);
+}
+.stat-label{font-size:10px;color:var(--text-c);letter-spacing:2px;text-transform:uppercase;}
+
+.scroll-cue{
+  position:absolute;bottom:34px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  opacity:0;animation:fadeUp .9s ease 1.4s forwards;
+}
+.scroll-cue span{font-size:9px;letter-spacing:4px;color:var(--text-c);}
+.scroll-arrow{width:20px;height:32px;border:1px solid var(--text-c);border-radius:10px;position:relative;}
+.scroll-arrow::after{
+  content:'';position:absolute;width:4px;height:4px;background:var(--cyan);
+  border-radius:50%;left:50%;transform:translateX(-50%);top:6px;
+  animation:sdot 2s ease-in-out infinite;
+}
+@keyframes sdot{0%{top:6px;opacity:1}80%{top:20px;opacity:0}100%{top:6px;opacity:0}}
+
+/* ── SECTION SHELL ── */
+.section{max-width:1120px;margin:0 auto;padding:80px 24px;}
+.sec-tag{
+  font-family:'Orbitron',monospace;font-size:9px;letter-spacing:4px;
+  color:var(--cyan);text-transform:uppercase;margin-bottom:14px;
+  display:flex;align-items:center;gap:12px;
+}
+.sec-tag::before{content:'';display:block;width:28px;height:1px;background:var(--cyan);}
+.sec-title{
+  font-family:'Noto Serif TC',serif;
+  font-size:clamp(1.8rem,4vw,3.2rem);font-weight:900;line-height:1.2;
+  margin-bottom:48px;color:#f5fbff;
+}
+.sec-title em{color:var(--gold);font-style:normal;}
+
+/* ── CARD GRID ── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;}
+.card{
+  background:var(--bg-card);border:1px solid var(--border-lo);
+  border-radius:18px;padding:34px 30px;position:relative;overflow:hidden;
+  transition:transform .4s cubic-bezier(.23,1,.32,1),border-color .3s,box-shadow .3s;
+  cursor:pointer;
+}
+.card::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(0,229,255,.07) 0%,transparent 55%);
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.card:hover{transform:translateY(-9px);border-color:var(--border-hi);box-shadow:0 28px 72px rgba(0,240,255,.22),0 0 0 1px rgba(0,240,255,.25);}
+.card:hover::after{opacity:1;}
+.card-icon{font-size:2.1rem;margin-bottom:18px;display:block;}
+.card-title{font-family:'Noto Serif TC',serif;font-size:1.2rem;font-weight:700;color:#00f0ff;text-shadow:0 0 12px rgba(0,240,255,.4);margin-bottom:12px;}
+.card-body{font-size:.88rem;line-height:1.9;color:#a0cce8;}
+.card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:22px;}
+.ctag{
+  display:inline-block;padding:4px 12px;border-radius:20px;
+  font-size:9px;letter-spacing:2px;font-family:'Orbitron',monospace;
+}
+.t-cy{background:rgba(0,229,255,.1);color:var(--cyan);border:1px solid rgba(0,229,255,.28);}
+.t-go{background:rgba(255,215,64,.1);color:var(--gold);border:1px solid rgba(255,215,64,.28);}
+.t-ro{background:rgba(255,107,157,.1);color:var(--rose);border:1px solid rgba(255,107,157,.28);}
+.t-li{background:rgba(178,255,89,.1);color:var(--lime);border:1px solid rgba(178,255,89,.28);}
+.t-vi{background:rgba(206,147,216,.1);color:var(--violet);border:1px solid rgba(206,147,216,.28);}
+.card-more{
+  font-size:9px;letter-spacing:2px;color:var(--text-c);
+  font-family:'Orbitron',monospace;cursor:pointer;
+  padding:4px 10px;border:1px solid var(--border-lo);border-radius:20px;
+  transition:border-color .2s,color .2s;
+}
+.card-more:hover{border-color:var(--border-hi);color:var(--cyan);}
+.card-expand{
+  max-height:0;overflow:hidden;
+  transition:max-height .45s cubic-bezier(.23,1,.32,1),padding .3s;
+  font-size:.83rem;line-height:1.85;color:var(--text-c);padding-top:0;
+}
+.card-expand.open{max-height:300px;padding-top:16px;}
+
+/* ── QUOTE ── */
+.quote-block{
+  margin:56px 0;padding:48px 48px 48px 64px;
+  background:linear-gradient(135deg,#091828,#071020);
+  border-left:5px solid var(--gold);border-radius:0 18px 18px 0;
+  box-shadow:inset 0 0 60px rgba(255,224,64,.04),-4px 0 20px rgba(255,224,64,.15);
+  position:relative;overflow:hidden;
+}
+.quote-block::before{
+  content:'"';position:absolute;left:14px;top:-8px;
+  font-family:'Noto Serif TC',serif;font-size:7rem;
+  color:var(--gold);opacity:.18;line-height:1;
+}
+.quote-block::after{
+  content:'';position:absolute;right:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,transparent,var(--gold),transparent);
+}
+.q-text{
+  font-family:'Noto Serif TC',serif;
+  font-size:clamp(1.05rem,2.2vw,1.4rem);line-height:1.85;color:#f0f9ff;
+}
+.q-src{margin-top:20px;font-size:10px;letter-spacing:3px;color:var(--gold);font-family:'Orbitron',monospace;}
+
+/* ── DATA STRIP ── */
+.data-strip{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:2px;margin:50px 0;border-radius:18px;overflow:hidden;
+  border:1px solid var(--border-lo);
+}
+.dc{
+  background:var(--bg-card);padding:34px 22px;text-align:center;
+  transition:background .3s,transform .2s;cursor:pointer;position:relative;overflow:hidden;
+}
+.dc::before{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent-color,var(--cyan)),transparent);
+  transform:scaleX(0);transition:transform .4s;
+}
+.dc:hover{background:var(--bg-panel);}
+.dc:hover::before{transform:scaleX(1);}
+.dc:active{transform:scale(.97);}
+.dv{font-family:'Orbitron',monospace;font-size:2.1rem;font-weight:900;display:block;margin-bottom:10px;}
+.dd{font-size:10px;color:var(--text-c);letter-spacing:1px;line-height:1.7;}
+.v1{color:#00f0ff;text-shadow:0 0 28px rgba(0,240,255,.8),0 0 8px rgba(0,240,255,.5);--accent-color:var(--cyan);}
+.v2{color:#ffe040;text-shadow:0 0 28px rgba(255,224,64,.8),0 0 8px rgba(255,224,64,.5);--accent-color:var(--gold);}
+.v3{color:#ff4d8d;text-shadow:0 0 28px rgba(255,77,141,.8),0 0 8px rgba(255,77,141,.5);--accent-color:var(--rose);}
+.v4{color:#c6ff4a;text-shadow:0 0 28px rgba(198,255,74,.8),0 0 8px rgba(198,255,74,.5);--accent-color:var(--lime);}
+.v5{color:#dd99ff;text-shadow:0 0 28px rgba(221,153,255,.8),0 0 8px rgba(221,153,255,.5);--accent-color:var(--violet);}
+
+/* ── TIMELINE ── */
+.timeline{position:relative;padding-left:32px;}
+.timeline::before{
+  content:'';position:absolute;left:8px;top:0;bottom:0;
+  width:1px;background:linear-gradient(180deg,var(--cyan),transparent);
+}
+.tl-item{
+  position:relative;margin-bottom:36px;
+  opacity:0;transform:translateX(-16px);
+  transition:opacity .6s ease,transform .6s ease;
+}
+.tl-item.vis{opacity:1;transform:translateX(0);}
+.tl-item::before{
+  content:'';position:absolute;left:-28px;top:6px;
+  width:12px;height:12px;border-radius:50%;
+  border:2px solid var(--cyan);background:var(--bg-deep);
+  box-shadow:0 0 14px var(--cyan),0 0 4px var(--cyan);
+}
+.tl-year{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:var(--cyan);margin-bottom:6px;}
+.tl-title{font-family:'Noto Serif TC',serif;font-size:1.05rem;font-weight:700;color:#ffe040;text-shadow:0 0 10px rgba(255,224,64,.35);margin-bottom:8px;}
+.tl-body{font-size:.88rem;line-height:1.85;color:#a0cce8;}
+
+/* ── BOUNDARY ITEMS ── */
+.b-list{display:flex;flex-direction:column;gap:14px;}
+.b-item{
+  display:flex;gap:22px;align-items:flex-start;
+  background:var(--bg-card);border:1px solid var(--border-lo);
+  border-radius:14px;padding:26px 30px;
+  cursor:pointer;
+  transition:border-color .3s,transform .35s cubic-bezier(.23,1,.32,1),background .3s;
+}
+.b-item:hover{border-color:rgba(0,240,255,.65);transform:translateX(10px);background:#071224;box-shadow:0 0 24px rgba(0,240,255,.08);}
+.b-num{
+  font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;
+  color:#00f0ff;opacity:.3;min-width:52px;line-height:1;transition:opacity .3s;
+}
+.b-item:hover .b-num{opacity:1;text-shadow:0 0 16px rgba(0,240,255,.7);}
+.b-title{font-family:'Noto Serif TC',serif;font-size:1.05rem;font-weight:700;color:#ffe040;text-shadow:0 0 8px rgba(255,224,64,.3);margin-bottom:8px;}
+.b-desc{font-size:.87rem;line-height:1.88;color:var(--text-b);}
+
+/* ── ACCORDION ── */
+.acc{display:flex;flex-direction:column;gap:10px;margin-top:32px;}
+.acc-item{background:var(--bg-card);border:1px solid var(--border-lo);border-radius:14px;overflow:hidden;}
+.acc-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:22px 28px;cursor:pointer;
+  font-family:'Noto Serif TC',serif;font-size:.98rem;font-weight:600;color:#f0f9ff;
+  user-select:none;transition:background .2s;gap:16px;
+}
+.acc-head:hover{background:rgba(0,229,255,.04);}
+.acc-ic{
+  width:28px;height:28px;border-radius:50%;border:1px solid var(--border-hi);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:var(--cyan);flex-shrink:0;
+  transition:transform .38s cubic-bezier(.23,1,.32,1);
+}
+.acc-item.open .acc-ic{transform:rotate(45deg);}
+.acc-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .5s cubic-bezier(.23,1,.32,1),padding .3s;
+  padding:0 28px;font-size:.88rem;line-height:1.9;color:#a0cce8;
+}
+.acc-item.open .acc-body{max-height:800px;padding:0 28px 26px;}
+.acc-body ul{padding-left:18px;margin-top:10px;}
+.acc-body ul li{margin-bottom:8px;}
+
+/* ── COMPARE TABLE ── */
+.cmp-table{width:100%;border-collapse:collapse;margin-top:32px;}
+.cmp-table th,.cmp-table td{padding:16px 20px;text-align:left;border-bottom:1px solid var(--border-lo);}
+.cmp-table thead tr{background:var(--bg-panel);}
+.cmp-table th{font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;color:#00f0ff;text-shadow:0 0 8px rgba(0,240,255,.5);}
+.cmp-table td{font-size:.87rem;color:var(--text-b);line-height:1.7;}
+.cmp-table tr{transition:background .2s;cursor:pointer;}
+.cmp-table tbody tr:hover{background:rgba(0,229,255,.04);}
+.cmp-table td:first-child{color:#ffe040;font-weight:700;font-family:'Noto Serif TC',serif;text-shadow:0 0 6px rgba(255,224,64,.3);}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:9px;letter-spacing:1px;font-family:'Orbitron',monospace;}
+
+/* ── WARN BOX ── */
+.warn-box{
+  background:linear-gradient(135deg,rgba(255,77,141,.14),rgba(255,77,141,.04));
+  border:2px solid rgba(255,77,141,.55);border-radius:18px;
+  box-shadow:0 0 48px rgba(255,77,141,.1),inset 0 0 60px rgba(255,77,141,.04);
+  padding:44px 50px;text-align:center;margin:56px 0;
+  position:relative;overflow:hidden;
+}
+.warn-box::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 0%,rgba(255,107,157,.07),transparent 60%);
+}
+.warn-box h3{font-family:'Noto Serif TC',serif;font-size:1.9rem;color:#ff4d8d;text-shadow:0 0 20px rgba(255,77,141,.5);margin-bottom:18px;}
+.warn-box p{font-size:.95rem;line-height:1.95;color:#a0cce8;max-width:700px;margin:0 auto;}
+
+/* ── ACTION GRID ── */
+.action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:36px;}
+.act-card{
+  background:var(--bg-card);border:1px solid var(--border-lo);
+  border-radius:14px;padding:28px 24px;text-align:center;
+  transition:transform .35s,border-color .3s;cursor:pointer;
+}
+.act-card:hover{transform:translateY(-5px);border-color:var(--border-hi);}
+.act-num{font-family:'Orbitron',monospace;font-size:2rem;font-weight:900;color:var(--lime);opacity:.35;display:block;margin-bottom:10px;}
+.act-title{font-family:'Noto Serif TC',serif;font-size:1rem;font-weight:700;color:var(--text-a);margin-bottom:8px;}
+.act-body{font-size:.82rem;color:var(--text-b);line-height:1.8;}
+
+/* ── DIVIDER ── */
+.div{height:1px;background:linear-gradient(90deg,transparent,rgba(0,240,255,.6),transparent);}
+
+/* ── FOOTER ── */
+footer{
+  padding:48px 24px;border-top:1px solid var(--border-lo);
+  text-align:center;position:relative;z-index:1;
+}
+.ft-logo{font-family:'Orbitron',monospace;font-size:.65rem;letter-spacing:4px;color:var(--text-c);margin-bottom:12px;}
+.ft-copy{font-size:10px;color:#152030;letter-spacing:2px;line-height:1.9;}
+.ft-sig{
+  display:inline-block;margin-top:28px;
+  font-family:'Orbitron',monospace;font-size:11px;letter-spacing:3px;
+  color:#00f0ff;opacity:.75;border-bottom:1px solid rgba(0,240,255,.35);padding-bottom:2px;
+}
+.pulse{
+  display:inline-block;width:7px;height:7px;background:var(--lime);
+  border-radius:50%;margin-right:8px;
+  animation:p 2s ease-in-out infinite;
+}
+@keyframes p{0%{box-shadow:0 0 0 0 rgba(178,255,89,.5)}70%{box-shadow:0 0 0 9px rgba(178,255,89,0)}100%{box-shadow:0 0 0 0 rgba(178,255,89,0)}}
+
+/* ── UTILS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .75s ease,transform .75s ease;}
+.reveal.vis{opacity:1;transform:translateY(0);}
+.hl-cy{color:var(--cyan);}
+.hl-go{color:var(--gold);}
+.hl-ro{color:var(--rose);}
+.hl-li{color:var(--lime);}
+
+@media(max-width:640px){
+  .quote-block{padding:30px 22px 30px 38px;}
+  .b-item{flex-direction:column;}
+  .warn-box{padding:34px 26px;}
+  .hero-stats{gap:26px;}
+  .data-strip{grid-template-columns:1fr 1fr;}
+  .cmp-table th,.cmp-table td{padding:12px 14px;}
+}
+</style>
+</head>
+<body>
+
+<!-- STARFIELD -->
+<div id="sf"></div>
+
+<!-- ══ TICKER ══ -->
+<div class="ticker-wrap">
+  <span class="ticker-badge">LIVE NEWS</span>
+  <div class="ticker-mask">
+    <div id="tickerInner"><!-- filled by JS --></div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- ══ HERO ══ -->
+<section class="hero">
+  <p class="eyebrow">深度報導 · Deep Report · 2026</p>
+  <h1 class="hero-title">
+    <span class="l1">AI 伴侶的崛起</span>
+    <span class="l2">真實，但有邊界</span>
+  </h1>
+  <p class="hero-sub">The Rise of AI Companionship — Real, Yet Bounded</p>
+  <div class="hero-stats">
+    <div class="stat-item"><span class="stat-num" data-count="37">0</span><span class="stat-label">% 老年人長期感到孤獨</span></div>
+    <div class="stat-item"><span class="stat-num" data-count="430">0</span><span class="stat-label">億美元 AI照護市場（2026）</span></div>
+    <div class="stat-item"><span class="stat-num" data-count="45">0</span><span class="stat-label">% 失智案例可預防延緩</span></div>
+    <div class="stat-item"><span class="stat-num" data-count="35">0</span><span class="stat-label">萬 台灣失智症人口推估</span></div>
+  </div>
+  <div class="scroll-cue">
+    <span>SCROLL</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ══ WHY ══ -->
+<section class="section reveal">
+  <p class="sec-tag">現象解析 · PHENOMENON</p>
+  <h2 class="sec-title">長者為何<em>轉向 AI</em>？</h2>
+  <div class="card-grid">
+
+    <div class="card">
+      <span class="card-icon">🌙</span>
+      <h3 class="card-title">深夜的空白</h3>
+      <p class="card-body">獨居長者在凌晨或日常瞬間想分享喜悅，卻發現身旁空無一人。子女遠在海外或各自忙碌，情緒產生的當下無法即時聯繫親友。AI成為隨時在線的傾聽窗口，填補了這段情感的真空地帶。</p>
+      <div class="card-foot">
+        <span class="ctag t-cy">LONELINESS</span>
+        <span class="card-more" data-target="cx1">展開 +</span>
+      </div>
+      <div class="card-expand" id="cx1">研究顯示，美國50至80歲成年人中約三分之一感到社交孤立；台灣超高齡社會已至，獨居長者比例持續攀升。孤獨感與心臟病、失智症及早逝風險顯著相關，絕非單純的情緒問題，而是切實的公共健康危機。</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">💬</span>
+      <h3 class="card-title">不想成為負擔</h3>
+      <p class="card-body">長者往往顧慮自己嘮叨，害怕被貼標籤，對反覆出現的負面情緒選擇自我過濾、壓抑隱忍。AI提供無評判的表達空間，讓他們能毫無保留地傾吐心聲，同時維護了尊嚴與自主感。</p>
+      <div class="card-foot">
+        <span class="ctag t-li">DIGNITY</span>
+        <span class="card-more" data-target="cx2">展開 +</span>
+      </div>
+      <div class="card-expand" id="cx2">2026年科技新報訪談指出，許多長者偏好AI的核心原因正是「關係考量」——擔心成為家人負擔、不希望造成麻煩。這揭示了一個深層社會議題：家庭支持體系的空洞，不能單靠科技填補，更需要文化與政策層面的改變。</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🧠</span>
+      <h3 class="card-title">認知健康守門員</h3>
+      <p class="card-body">工研院資通所研究指出，AI聊天機器人可記錄長者語速變化、語言複雜度等數位生物指標，偵測認知功能退化跡象，協助家屬及早察覺就醫時機，從陪伴工具進化為健康預警系統。</p>
+      <div class="card-foot">
+        <span class="ctag t-ro">HEALTH TECH</span>
+        <span class="card-more" data-target="cx3">展開 +</span>
+      </div>
+      <div class="card-expand" id="cx3">台北醫學大學研究亦發現，步態速度、語速等日常行為指標可作為認知退化的早期訊號。AI的持續性、非侵入性監測特性，讓這種早期偵測成為可能——失智症一旦進入不可逆階段，往往已錯失黃金介入時機。</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🌐</span>
+      <h3 class="card-title">打破地理與時間的隔閡</h3>
+      <p class="card-body">偏鄉長者缺乏醫療資源、深夜無人陪伴、行動不便難以外出——AI伴侶突破這些物理限制，24小時全天候提供陪伴與資訊，讓照護資源得以延伸至社會的每一個角落。</p>
+      <div class="card-foot">
+        <span class="ctag t-go">EQUITY</span>
+        <span class="card-more" data-target="cx4">展開 +</span>
+      </div>
+      <div class="card-expand" id="cx4">台灣行政院2023年「高齡科技產業行動計畫」明確將偏鄉與弱勢族群納入目標，但政策落地的最後一哩路仍是挑戰。AI伴侶若能以親民介面、低門檻設計滲透這些族群，將是彌補資源分配不均的重要槓桿。</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">🎓</span>
+      <h3 class="card-title">終身學習的新夥伴</h3>
+      <p class="card-body">AI不只是聊天對象，更可成為學習引導者——陪長者學外語、解釋新聞、討論歷史、練習數學。持續的認知刺激被醫學界公認為延緩失智最有效的非藥物干預之一。</p>
+      <div class="card-foot">
+        <span class="ctag t-vi">LEARNING</span>
+        <span class="card-more" data-target="cx5">展開 +</span>
+      </div>
+      <div class="card-expand" id="cx5">2024年數位學習國際研討會研究顯示，對長者進行以生活為主的數位技能訓練，不僅提升學習興趣，更促進認知功能。學語言、攝影、AI繪圖等創作活動同時啟動記憶、邏輯、創意多個腦區，效益遠超被動滑手機。</div>
+    </div>
+
+    <div class="card">
+      <span class="card-icon">👨‍👩‍👧</span>
+      <h3 class="card-title">重建跨世代連結的鑰匙</h3>
+      <p class="card-body">學會使用科技的長者，獲得了與年輕家人共同話題的鑰匙。機構負責人指出：當長者能分享學習心得，家人來探望時多了聊天話題，也多了一份驕傲——這是情感連結的重建，也是尊嚴的找回。</p>
+      <div class="card-foot">
+        <span class="ctag t-cy">CONNECTION</span>
+        <span class="card-more" data-target="cx6">展開 +</span>
+      </div>
+      <div class="card-expand" id="cx6">數位落差不只是技術問題，更是社會融合議題。當長者被排除在數位世界之外，等同於被排除在現代社交圈之外。國家教育研究院2025年報告呼籲，高齡數位素養培育應以生活情境出發，由親友與照護者共同引導，方能有效降低科技焦慮。</div>
+    </div>
+
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ══ QUOTE ══ -->
+<div class="section reveal">
+  <div class="quote-block">
+    <p class="q-text">AI作為一個隨時在線的對話窗口，在無形中為長者建立了一種<strong class="hl-go">數位陪伴的穩定感</strong>，讓他們在現實社交受限的情況下，依然保有表達與被傾聽的權利。然而，科技的最終任務，是<strong class="hl-cy">把人帶回人的身邊</strong>——這條線，不能模糊。</p>
+    <p class="q-src">— 整合自 TechNews科技新報 ／ 工研院資通所 ／ Lancet 2024 研究報告</p>
+  </div>
+</div>
+
+<div class="div"></div>
+
+<!-- ══ DATA ══ -->
+<section class="section reveal">
+  <p class="sec-tag">關鍵數據 · KEY FIGURES</p>
+  <h2 class="sec-title">數字背後的<em>真相</em></h2>
+  <div class="data-strip">
+    <div class="dc" title="點擊查看說明" data-tip="密西根大學全國調查（2026）">
+      <span class="dv v1">37%</span>
+      <span class="dd">全球老年人<br>長期感到孤獨</span>
+    </div>
+    <div class="dc" data-tip="Research and Markets市調機構（2026）">
+      <span class="dv v2">$430億</span>
+      <span class="dd">高齡AI照護<br>全球市場規模</span>
+    </div>
+    <div class="dc" data-tip="衛生福利部2024年調查報告">
+      <span class="dv v3">35萬</span>
+      <span class="dd">台灣失智症<br>人口推估（2024）</span>
+    </div>
+    <div class="dc" data-tip="Lancet失智症防治委員會2024年更新報告">
+      <span class="dv v4">45%</span>
+      <span class="dd">失智症案例<br>可預防或延緩</span>
+    </div>
+    <div class="dc" data-tip="紐約前導計畫ElliQ，2024年結果報告">
+      <span class="dv v5">1,000+</span>
+      <span class="dd">長者參與<br>AI伴侶前導計畫</span>
+    </div>
+  </div>
+  <p style="text-align:center;font-size:10px;color:var(--text-c);letter-spacing:2px;margin-top:-28px;">▲ 點擊數據格顯示來源說明</p>
+</section>
+
+<div class="div"></div>
+
+<!-- ══ TIMELINE ══ -->
+<section class="section reveal">
+  <p class="sec-tag">發展脈絡 · TIMELINE</p>
+  <h2 class="sec-title">AI 陪伴科技的<em>演進之路</em></h2>
+  <div class="timeline">
+    <div class="tl-item">
+      <p class="tl-year">2019</p>
+      <h4 class="tl-title">社交機器人進入長照機構</h4>
+      <p class="tl-body">愛爾蘭三一學院開發的 Stevie 社交輔助機器人入選《TIME》百大最佳發明，登上封面。聊天機器人首度被視為長照人力缺口的補充方案，引發全球關注。</p>
+    </div>
+    <div class="tl-item">
+      <p class="tl-year">2021</p>
+      <h4 class="tl-title">生成式AI前期：智慧音箱浪潮</h4>
+      <p class="tl-body">語音助理（Siri、Google）普及，帶動長者聊天機器人產品浪潮。然而早期產品因對話品質有限，商業化成功案例寥寥，多款產品發布後相繼停產。</p>
+    </div>
+    <div class="tl-item">
+      <p class="tl-year">2023</p>
+      <h4 class="tl-title">ChatGPT 改變遊戲規則</h4>
+      <p class="tl-body">生成式AI爆炸性進步，對話自然度飛躍提升。台灣行政院同年核定「高齡科技產業行動計畫」，將AI納入銀髮照護核心策略，目標2025年產業突破3,000億元。</p>
+    </div>
+    <div class="tl-item">
+      <p class="tl-year">2024</p>
+      <h4 class="tl-title">主動致電服務 · 前導計畫驗證</h4>
+      <p class="tl-body">Meela AI（美國）推出主動致電長者服務；紐約前導計畫千名長者驗證ElliQ成效；工研院展示AI語速偵測認知退化功能。Lancet報告指出45%失智症可預防，AI健康守門員地位確立。</p>
+    </div>
+    <div class="tl-item">
+      <p class="tl-year">2025–26</p>
+      <h4 class="tl-title">台灣超高齡社會元年 · AI伴侶主流化</h4>
+      <p class="tl-body">台灣正式邁入超高齡社會，65歲以上失智症盛行率7.99%。AI伴侶市場全球突破430億美元，情緒辨識、記憶追蹤、跨代視訊整合成為新一代產品標配。邊界的討論，從技術進入倫理與政策。</p>
+    </div>
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ══ COMPARE TABLE ══ -->
+<section class="section reveal">
+  <p class="sec-tag">對比分析 · COMPARISON</p>
+  <h2 class="sec-title">AI 伴侶 vs. 真人互動：<em>客觀比較</em></h2>
+  <div style="overflow-x:auto;">
+  <table class="cmp-table">
+    <thead>
+      <tr>
+        <th>比較面向</th>
+        <th>AI 伴侶</th>
+        <th>真人互動</th>
+        <th>建議策略</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>可及性</td>
+        <td>✅ 24小時、無地域限制</td>
+        <td>⚠️ 受時間地點限制</td>
+        <td><span class="badge t-cy">AI優先補充</span></td>
+      </tr>
+      <tr>
+        <td>情感深度</td>
+        <td>⚠️ 模擬理解，無真實共情</td>
+        <td>✅ 真實情緒共鳴與溫度</td>
+        <td><span class="badge t-go">真人為核心</span></td>
+      </tr>
+      <tr>
+        <td>認知刺激</td>
+        <td>✅ 問答、學習、語言練習</td>
+        <td>✅ 社交互動刺激更多元腦區</td>
+        <td><span class="badge t-li">雙軌並行</span></td>
+      </tr>
+      <tr>
+        <td>健康監測</td>
+        <td>✅ 語速、語言數位生物指標</td>
+        <td>❌ 難以持續系統性記錄</td>
+        <td><span class="badge t-cy">AI擔任守門員</span></td>
+      </tr>
+      <tr>
+        <td>評判風險</td>
+        <td>✅ 無評判，長者可自在表達</td>
+        <td>⚠️ 可能感到被評判或成負擔</td>
+        <td><span class="badge t-vi">建立安全感</span></td>
+      </tr>
+      <tr>
+        <td>長期依賴風險</td>
+        <td>⚠️ 可能導致社交萎縮</td>
+        <td>✅ 促進真實社會融合</td>
+        <td><span class="badge t-ro">需設使用邊界</span></td>
+      </tr>
+      <tr>
+        <td>成本門檻</td>
+        <td>✅ 訂閱制，可規模化</td>
+        <td>⚠️ 人力成本高、資源分配不均</td>
+        <td><span class="badge t-go">政策補貼關鍵</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ══ BOUNDARIES ══ -->
+<section class="section reveal">
+  <p class="sec-tag">核心邊界 · CRITICAL BOUNDARIES</p>
+  <h2 class="sec-title">AI 伴侶的<em>四條不可逾越的線</em></h2>
+  <div class="b-list">
+    <div class="b-item">
+      <span class="b-num">01</span>
+      <div>
+        <h4 class="b-title">橋樑，不是終點</h4>
+        <p class="b-desc">AI陪伴應當把長者引向真實的人際互動，而非取而代之。與孫子視訊通話、和老友在公園相聚，對大腦認知的多元刺激遠勝於AI對話。用視訊跟孫子聊天，比跟AI聊天更有腦部活化效果——這是神經科學共識，也是人性本質。</p>
+      </div>
+    </div>
+    <div class="b-item">
+      <span class="b-num">02</span>
+      <div>
+        <h4 class="b-title">透明，不得欺騙</h4>
+        <p class="b-desc">Meela AI 創辦人Josh Sach明確表示：「我們不希望欺騙人，讓他們以為在跟真人聊天。」每次通話一開始，AI必定說明自己的AI身份。信任建立在誠實之上，沒有例外——任何試圖模糊AI與真人界線的設計，都是對長者尊嚴的侵犯。</p>
+      </div>
+    </div>
+    <div class="b-item">
+      <span class="b-num">03</span>
+      <div>
+        <h4 class="b-title">輔助，不替代專業照護</h4>
+        <p class="b-desc">AI可以偵測語速異常、提醒就醫，但無法替代神經科醫師的診斷、心理師的深度治療、或家人的體溫與擁抱。數位工具是第一道篩網，不是最後防線。當AI偵測到異常，立即引介專業才是正確設計邏輯。</p>
+      </div>
+    </div>
+    <div class="b-item">
+      <span class="b-num">04</span>
+      <div>
+        <h4 class="b-title">賦能，不製造數位繭房</h4>
+        <p class="b-desc">若長者越來越依賴AI而減少外出、減少與真人互動，社交萎縮反而加速認知退化，形成惡性循環。良善的AI設計，應主動鼓勵長者走向真實世界——設定互動上限、推薦真實活動、連結社區資源，讓科技成為出口，而非牢籠。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ══ FAQ ══ -->
+<section class="section reveal">
+  <p class="sec-tag">深度探問 · Q&amp;A</p>
+  <h2 class="sec-title">你最想知道的<em>六個問題</em></h2>
+  <div class="acc">
+
+    <div class="acc-item" id="q1">
+      <div class="acc-head" data-acc="q1">
+        <span>AI伴侶真的能減輕老年孤獨感嗎？有實證嗎？</span>
+        <span class="acc-ic">+</span>
+      </div>
+      <div class="acc-body">
+        <strong class="hl-cy">有，但效果需要條件支撐。</strong>紐約前導計畫顯示，近千名長者與AI機器人ElliQ互動後，大多數孤獨感確實下降，幸福感提升，平均每週五天、每天28分鐘互動。新加坡AMI-Go、美國Meela AI等也有正面回報。<br><br>但研究同時指出：<ul><li>效果在維持真實人際關係的前提下才最顯著</li><li>AI是補充，不是替代——完全用AI取代真人互動的長者，認知風險反而可能增加</li><li>長者的數位素養與使用態度，顯著影響效果</li></ul>
+      </div>
+    </div>
+
+    <div class="acc-item" id="q2">
+      <div class="acc-head" data-acc="q2">
+        <span>AI能幫助預防或延緩失智症嗎？</span>
+        <span class="acc-ic">+</span>
+      </div>
+      <div class="acc-body">
+        <strong class="hl-go">間接有效，但非直接治療。</strong>Lancet 2024年報告指出，45%失智症案例可透過控制14項可改變因子預防，包括：社交孤立、低教育程度、缺乏體能活動、聽力視力受損、高血壓、肥胖、糖尿病等。<br><br>AI在兩個層面有確切貢獻：<ul><li><strong>早期偵測：</strong>語速、語言複雜度等數位生物指標可提早6至18個月發現認知退化跡象</li><li><strong>認知刺激：</strong>問答對話、學習輔助、語言練習都是有效的非藥物認知干預</li></ul>
+        但AI本身無法治療失智症，也不能替代神經科的專業評估。
+      </div>
+    </div>
+
+    <div class="acc-item" id="q3">
+      <div class="acc-head" data-acc="q3">
+        <span>家人該如何看待長者使用AI伴侶？</span>
+        <span class="acc-ic">+</span>
+      </div>
+      <div class="acc-body">
+        <strong class="hl-li">既不必感到被取代，也不能完全放心。</strong>研究揭示，長者轉向AI的核心原因之一是「不想成為家人負擔」——這本身就是家人需要深思的訊號。<br><br>建議家人的態度：<ul><li>將AI視為填補陪伴空隙的工具，而非卸責的藉口</li><li>定期與長者討論AI使用體驗，了解需求</li><li>利用AI的對話記錄（若有）觀察長者情緒狀態</li><li>主動、不評判的情感陪伴，始終是AI無法複製的</li></ul>
+      </div>
+    </div>
+
+    <div class="acc-item" id="q4">
+      <div class="acc-head" data-acc="q4">
+        <span>台灣政府的高齡科技政策走到哪裡了？</span>
+        <span class="acc-ic">+</span>
+      </div>
+      <div class="acc-body">
+        <strong class="hl-cy">方向正確，落地是關鍵。</strong>行政院2023年核定「高齡科技產業行動計畫」，涵蓋健康促進、醫療照護、社會互動、數位學習四大面向，目標2025年健康福祉產業營業額突破3,000億元。衛福部《失智症防治照護政策綱領》已納入AI數位生物標記的應用規劃。<br><br>但現實缺口：<ul><li>偏鄉、獨居、低收入長者能否真正受益，資源分配不均問題尚未解決</li><li>AI伴侶產品的品質標準與倫理規範，立法尚在空白</li><li>照護人員的數位培訓嚴重不足（超過六成照顧者未受過相關訓練）</li></ul>
+      </div>
+    </div>
+
+    <div class="acc-item" id="q5">
+      <div class="acc-head" data-acc="q5">
+        <span>AI伴侶會不會讓長者更加與真實社會脫節？</span>
+        <span class="acc-ic">+</span>
+      </div>
+      <div class="acc-body">
+        <strong class="hl-ro">這是最需要警惕的風險。</strong>過度依賴AI可能導致「數位繭房」效應——長者減少外出、減少真人互動，社交網絡持續萎縮，反而加速認知退化。<br><br>良善的設計應主動對抗這一風險：<ul><li>設置每日互動時間上限與提醒</li><li>主動推薦社區活動、視訊家人等真實互動選項</li><li>偵測到長者連續多日未出門，主動通知照顧者</li><li>將AI互動作為橋樑，引導長者回到真實社交場景</li></ul>
+      </div>
+    </div>
+
+    <div class="acc-item" id="q6">
+      <div class="acc-head" data-acc="q6">
+        <span>未來的AI伴侶將走向何方？</span>
+        <span class="acc-ic">+</span>
+      </div>
+      <div class="acc-body">
+        <strong class="hl-go">從對話，到全感知陪伴。</strong>下一代AI伴侶將整合多項技術突破：<ul><li><strong>情緒辨識：</strong>透過語音音調、面部表情即時感知情緒狀態，調整對話策略</li><li><strong>具身機器人：</strong>結合人形機器人，提供物理陪伴、協助復健、帶領健康操</li><li><strong>跨代整合平台：</strong>AI同時服務長者與其家人，自動生成每日健康摘要通知子女</li><li><strong>數位孿生健康档案：</strong>哈佛醫學院已研究透過AI建立個人化健康預測模型</li></ul>
+        邊界的設定，必須與技術同步演進——否則，我們可能在不知不覺中，用科技替代了人類最需要給予的東西。
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ══ ACTION GUIDE ══ -->
+<section class="section reveal">
+  <p class="sec-tag">行動指南 · ACTION GUIDE</p>
+  <h2 class="sec-title">中老年人<em>主動老化</em>的數位框架</h2>
+  <p style="color:var(--text-b);font-size:.92rem;line-height:1.9;margin-bottom:8px;">科技不是目的，「活得有意思」才是。以下五個層次，幫助中老年人與數位科技建立健康、主動的關係：</p>
+  <div class="action-grid">
+    <div class="act-card">
+      <span class="act-num">01</span>
+      <h4 class="act-title">工具層 · 生存型</h4>
+      <p class="act-body">視訊通話、網路掛號、行動支付、防詐識讀。目標：不被數位世界排除，維持生活自主。</p>
+    </div>
+    <div class="act-card">
+      <span class="act-num">02</span>
+      <h4 class="act-title">社交層 · 連結型</h4>
+      <p class="act-body">Line家族群、興趣社團、線上讀書會、視訊孫子。目標：打破孤立，維繫真實關係網絡。</p>
+    </div>
+    <div class="act-card">
+      <span class="act-num">03</span>
+      <h4 class="act-title">創作層 · 表達型</h4>
+      <p class="act-body">手機攝影、部落格寫作、短影音日記、AI繪圖。目標：創造有意義的作品，帶來成就感與自我價值。</p>
+    </div>
+    <div class="act-card">
+      <span class="act-num">04</span>
+      <h4 class="act-title">學習層 · 成長型</h4>
+      <p class="act-body">語言學習App、線上課程、歷史Podcast、AI問答。目標：持續認知刺激，保持好奇心。</p>
+    </div>
+    <div class="act-card">
+      <span class="act-num">05</span>
+      <h4 class="act-title">監測層 · 預防型</h4>
+      <p class="act-body">穿戴裝置健康監測、AI語速分析、認知評估App。目標：早期預警，掌握自己的健康狀態。</p>
+    </div>
+  </div>
+</section>
+
+<div class="div"></div>
+
+<!-- ══ WARNING BOX ══ -->
+<div class="section reveal">
+  <div class="warn-box">
+    <h3>⚠️ 最終的人文警示</h3>
+    <p>
+      科技的最終任務，是<strong class="hl-cy">把人帶回人的身邊</strong>。<br><br>
+      用視訊跟孫子聊天，比跟AI聊天更有腦部活化的效果；和老友在Line上討論一部剛看完的電影，比被演算法推送短影音更滋養心智。AI伴侶，是我們尚未完善人際支持體系之前的<strong class="hl-go">暫時補丁</strong>，不應成為永久替代方案。<br><br>
+      <strong class="hl-ro">AI伴侶，讓我們更人性化——還是讓我們忘記如何當一個人？</strong><br>
+      這個問題，值得每一個人、每一個政策制定者、每一個科技開發者，認真而誠實地回答。
+    </p>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <p class="ft-logo"><span class="pulse"></span>AI COMPANION · SPECIAL REPORT · 2026</p>
+  <p class="ft-copy">
+    Research synthesized from：JAMA · The Lancet 2024 · TechNews科技新報 · 工研院資通所<br>
+    兒福聯盟 · 國衛院 · 衛生福利部 · 行政院高齡科技產業行動計畫<br>
+    國家教育研究院電子報2025 · Meela AI · ElliQ前導計畫 · 台灣失智症協會
+  </p>
+  <br>
+  <span class="ft-sig">Integrated by t-s-y</span>
+</footer>
+
+</div><!-- /page -->
+
+<!-- ════════════════════════
+     JAVASCRIPT
+════════════════════════ -->
+<script>
+'use strict';
+
+/* ─── 1. STARFIELD ─── */
+(function(){
+  const sf = document.getElementById('sf');
+  for(let i=0;i<200;i++){
+    const s=document.createElement('div');
+    s.className='st';
+    const sz=(Math.random()*2.4+0.4).toFixed(1);
+    s.style.cssText=`
+      width:${sz}px;height:${sz}px;
+      left:${(Math.random()*100).toFixed(2)}%;
+      top:${(Math.random()*100).toFixed(2)}%;
+      opacity:${(Math.random()*0.55+0.08).toFixed(2)};
+      animation:p ${(Math.random()*4+2).toFixed(1)}s ease-in-out
+                ${(Math.random()*-6).toFixed(1)}s infinite;
+    `;
+    sf.appendChild(s);
+  }
+})();
+
+/* ─── 2. TICKER (rAF-driven, adjustable speed) ─── */
+(function(){
+  const NEWS=[
+    '📡 2026年：全球37%老年人長期感到孤獨，AI陪伴需求急速激增',
+    '🤖 紐約前導計畫：近千名長者使用AI機器人ElliQ，逾半數孤獨感顯著下降',
+    '💡 工研院：AI可記錄長者語速變化，早期偵測認知退化風險',
+    '⚠️ 專家警示：AI伴侶應是人際橋樑而非終點，過度依賴恐加速社交萎縮',
+    '🌏 台灣2025年正式邁入超高齡社會，65歲以上失智症盛行率達7.99%',
+    '💰 高齡者AI照護市場2026年預估突破430億美元，科技公司競相投入',
+    '📱 Meela AI：月費40美元，由AI主動致電長者，記憶功能讓對話自然延續',
+    '🧠 Lancet 2024：45%失智症病例可透過控制14項可改變因子預防或延緩',
+    '🏛️ 行政院高齡科技計畫：2025年健康福祉產業目標突破3,000億元',
+    '🎓 研究：每日15分鐘語言學習App，可顯著提升長者認知刺激與活躍度',
+    '🤝 新加坡AMI-Go機器人：結合科技大學與社服機構，為獨居長者提供數位陪伴',
+    '🔬 台北醫學大學：步態速度可作為認知退化早期偵測的數位生物指標',
+  ];
+  const inner=document.getElementById('tickerInner');
+  // Build 3 copies for seamless infinite scroll
+  [0,1,2].forEach(()=>{
+    NEWS.forEach(text=>{
+      const span=document.createElement('span');
+      span.className='ti';
+      span.innerHTML=text+'<span class="sep"> ◈ </span>';
+      inner.appendChild(span);
+    });
+  });
+
+  let pos=0;
+  const PX_PER_SEC=68; // ← speed: pixels per second — comfortable reading pace
+  let last=null;
+  let paused=false;
+
+  // Measure one copy width
+  function getOneWidth(){return inner.scrollWidth/3;}
+
+  function tick(ts){
+    if(!last) last=ts;
+    if(!paused){
+      const dt=(ts-last)/1000;
+      pos+=PX_PER_SEC*dt;
+      if(pos>=getOneWidth()) pos-=getOneWidth();
+      inner.style.transform=`translateX(-${pos.toFixed(2)}px)`;
+    }
+    last=ts;
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // Pause on hover
+  document.querySelector('.ticker-mask').addEventListener('mouseenter',()=>paused=true);
+  document.querySelector('.ticker-mask').addEventListener('mouseleave',()=>paused=false);
+})();
+
+/* ─── 3. INTERSECTION OBSERVER: reveal ─── */
+const revObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');});
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+
+/* ─── 4. COUNTER ANIMATION ─── */
+function animCount(el,target,dur=1800){
+  let start=null;
+  (function step(ts){
+    if(!start)start=ts;
+    const p=Math.min((ts-start)/dur,1);
+    const e=1-Math.pow(1-p,4);
+    el.textContent=Math.floor(e*target);
+    if(p<1)requestAnimationFrame(step);
+    else el.textContent=target;
+  })(performance.now());
+}
+const cntObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      animCount(e.target,+e.target.dataset.count);
+      cntObs.unobserve(e.target);
+    }
+  });
+},{threshold:.5});
+document.querySelectorAll('[data-count]').forEach(el=>cntObs.observe(el));
+
+/* ─── 5. TIMELINE reveal ─── */
+const tlObs=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>e.target.classList.add('vis'),i*130);
+      tlObs.unobserve(e.target);
+    }
+  });
+},{threshold:.15});
+document.querySelectorAll('.tl-item').forEach(el=>tlObs.observe(el));
+
+/* ─── 6. CARD EXPAND (Read More) ─── */
+document.querySelectorAll('.card-more').forEach(btn=>{
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const id=btn.dataset.target;
+    const box=document.getElementById(id);
+    const open=box.classList.toggle('open');
+    btn.textContent=open?'收起 −':'展開 +';
+  });
+});
+
+/* ─── 7. CARD MOUSE GLOW ─── */
+document.querySelectorAll('.card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    card.style.setProperty('--mx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
+    card.style.setProperty('--my',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
+  });
+});
+
+/* ─── 8. ACCORDION ─── */
+document.querySelectorAll('.acc-head').forEach(head=>{
+  head.addEventListener('click',()=>{
+    const item=head.closest('.acc-item');
+    const wasOpen=item.classList.contains('open');
+    document.querySelectorAll('.acc-item').forEach(i=>i.classList.remove('open'));
+    if(!wasOpen)item.classList.add('open');
+  });
+});
+
+/* ─── 9. DATA CELL TOOLTIP ─── */
+const tip=document.createElement('div');
+tip.style.cssText=`
+  position:fixed;padding:8px 14px;background:#0a1e36;border:1px solid rgba(0,229,255,.35);
+  border-radius:8px;font-size:11px;color:#7fb3d3;letter-spacing:1px;pointer-events:none;
+  z-index:999;opacity:0;transition:opacity .2s;max-width:220px;line-height:1.6;
+  font-family:'Noto Sans TC',sans-serif;
+`;
+document.body.appendChild(tip);
+document.querySelectorAll('.dc[data-tip]').forEach(dc=>{
+  dc.addEventListener('mouseenter',e=>{
+    tip.textContent='📌 來源：'+dc.dataset.tip;
+    tip.style.opacity='1';
+  });
+  dc.addEventListener('mousemove',e=>{
+    tip.style.left=(e.clientX+14)+'px';
+    tip.style.top=(e.clientY-36)+'px';
+  });
+  dc.addEventListener('mouseleave',()=>{tip.style.opacity='0';});
+  dc.addEventListener('click',()=>{
+    const old=tip.style.background;
+    tip.style.background='rgba(0,229,255,.18)';
+    setTimeout(()=>tip.style.background=old,300);
+  });
+});
+
+/* ─── 10. BOUNDARY ITEM stagger reveal ─── */
+const bObs=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{
+    if(e.isIntersecting){
+      setTimeout(()=>{
+        e.target.style.opacity='1';
+        e.target.style.transform='translateX(0)';
+      },i*110);
+      bObs.unobserve(e.target);
+    }
+  });
+},{threshold:.1});
+document.querySelectorAll('.b-item').forEach(el=>{
+  el.style.opacity='0';
+  el.style.transform='translateX(-18px)';
+  el.style.transition='opacity .55s ease,transform .55s ease,border-color .3s,background .3s';
+  bObs.observe(el);
+});
+
+/* ─── 11. ACTION CARD ripple ─── */
+document.querySelectorAll('.act-card').forEach(c=>{
+  c.addEventListener('click',()=>{
+    c.style.transform='scale(.96)';
+    setTimeout(()=>c.style.transform='',180);
+  });
+});
+
+/* ─── 12. TABLE ROW highlight ─── */
+document.querySelectorAll('.cmp-table tbody tr').forEach(tr=>{
+  tr.addEventListener('click',()=>{
+    document.querySelectorAll('.cmp-table tbody tr').forEach(r=>r.style.background='');
+    tr.style.background='rgba(0,229,255,.07)';
+  });
+});
+</script>
+</body>
+</html>
